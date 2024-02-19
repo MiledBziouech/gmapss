@@ -1,15 +1,19 @@
-import React, { useEffect } from 'react';
-import { View,Text, StyleSheet, Dimensions } from 'react-native';
-import MapView,{ Marker ,PROVIDER_GOOGLE } from 'react-native-maps';
+import React, {useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import MapView,{Polyline, Marker ,PROVIDER_GOOGLE } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import customMapStyle from './customMapStyle';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
+import Directi from './Directi';
 
 export default function App() {
-  const [pin, setPin]=React.useState({
+
+  
+
+  const [pin, setPin]= React.useState({
     latitude: 43.770919, 
     longitude:11.270960,
   })
@@ -27,7 +31,7 @@ export default function App() {
         longitude: location.coords.longitude,
       })
     })();
-  }, []);
+  }, [pin]);
 
   const { width, height } = Dimensions.get("window");
 
@@ -37,27 +41,27 @@ export default function App() {
 
     longitude: 11.251349,
   };
-  const origin = {
-    latitude:43.766476, 
-    longitude:11.250857,
-  };
   
   const GOOGLE_MAPS_APIKEY = 'AIzaSyArDHKxkI_wPzZB71m3HUjZgIuiZrGfg-k';
   
   
+
+
+
   
   const Aspect_Ratio = width / height;
   const LATTUDE_DELTA = 0.2;
   const LONGITUDE_DELTA = LATTUDE_DELTA * Aspect_Ratio;
   const INITIAL_POSITION = {
-    latitude: 43.770919, 
-    longitude:11.270960,
+    latitude: 43.766764, 
+    longitude:11.251349,
     latitudeDelta: LATTUDE_DELTA,
     longitudeDelta: LONGITUDE_DELTA,
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      
       <MapView
         followUserLocation={true}
         zoomEnabled={true}
@@ -76,6 +80,10 @@ export default function App() {
           console.log("onUserLocationChange", e.nativeEvent.coordinate);
         }}
       >
+        <Directi />
+        
+        
+        
         <Marker
         
         coordinate={pin}
@@ -84,31 +92,27 @@ export default function App() {
         >
 
         </Marker>
-        <MapViewDirections
-            origin={userLocation}
-            destination={{ latitude: 35.736034, longitude: 10.724127 }}
-            apikey={'YOUR_GOOGLE_MAPS_API_KEY'}
-          />
         
-      <View style={styles.searchContainer}>
-        
+        <View style={styles.searchContainer}>
           <GooglePlacesAutocomplete
             styles={{ textInput: styles.input }}
             placeholder={"Search"}
             fetchDetails
             onPress={(data, details = null) => {
-              onPlaceSelected(details);
+              onPlaceSelected(data, details);
             }}
             query={{
               key: GOOGLE_MAPS_APIKEY,
               language: 'en',
             }}
           />
-      </View>
+        
 
       <StatusBar style="auto" />
+      
+        </View>
       </MapView>
-    </View>
+    </SafeAreaView>
   );
 }
 
