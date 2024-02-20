@@ -5,13 +5,19 @@ import { StatusBar } from 'expo-status-bar';
 import Constants from 'expo-constants';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import customMapStyle from './customMapStyle';
-import MapViewDirections from 'react-native-maps-directions';
+
 import * as Location from 'expo-location';
 import Directi from './Directi';
+import Cardd from './Cardd';
+
 
 export default function App() {
 
-  
+  const [showCard, setShowCard] = useState(false);
+
+  const toggleCard = () => {
+    setShowCard(!showCard);
+  };
 
   const [pin, setPin]= React.useState({
     latitude: 43.770919, 
@@ -45,7 +51,7 @@ export default function App() {
   const GOOGLE_MAPS_APIKEY = 'AIzaSyArDHKxkI_wPzZB71m3HUjZgIuiZrGfg-k';
   
   
-
+ 
 
 
   
@@ -80,7 +86,8 @@ export default function App() {
           console.log("onUserLocationChange", e.nativeEvent.coordinate);
         }}
       >
-        <Directi />
+        
+        {/* <Directi /> */}
         
         
         
@@ -89,6 +96,7 @@ export default function App() {
         coordinate={pin}
         title={"Pin"}
         description='pin description'
+        on press={toggleCard}
         >
 
         </Marker>
@@ -108,13 +116,18 @@ export default function App() {
           />
         
 
-      <StatusBar style="auto" />
+      
       
         </View>
+        <StatusBar style="auto" />
+        
       </MapView>
+      
+        
+        {showCard && <Cardd />}
     </SafeAreaView>
-  );
-}
+  );}
+          
 
 const styles = StyleSheet.create({
   container: {
@@ -139,4 +152,5 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     color: '#01F2CF'
   }
+  
 });
