@@ -1,79 +1,156 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect } from 'react';
+import { View, StyleSheet, Dimensions, SafeAreaView } from 'react-native';
+import MapView,{Polyline, Marker ,PROVIDER_GOOGLE } from 'react-native-maps';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View, Image, ImageBackground } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
-import MapViewDirections from 'react-native-maps-directions';
-import Geolocation from '@react-native-community/geolocation';
+import Constants from 'expo-constants';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import customMapStyle from './customMapStyle';
+
+import * as Location from 'expo-location';
+import Directi from './Directi';
+import Cardd from './Cardd';
+
 
 export default function App() {
-  const [userLocation, setUserLocation] = useState(null);
 
+  const [showCard, setShowCard] = useState(false);
+
+  const toggleCard = () => {
+    setShowCard(!showCard);
+  };
+
+  const [pin, setPin]= React.useState({
+    latitude: 43.770919, 
+    longitude:11.270960,
+  })
   useEffect(() => {
-    Geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        setUserLocation({ latitude, longitude });
-      },
-      error => console.log(error),
-      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
-    );
-  }, []);
+    (async() => {
+      let {status} = await Location.requestForegroundPermissionsAsync();
+      if ( status !== 'granted') {
+        setErrorMsg('Permission to access Location was denied');
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      console.log(location);
+      setPin({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      })
+    })();
+  }, [pin]);
 
-  const MyCustomMarkerView = () => {
-    return (
-      <ImageBackground
-        source={require('./assets/Ellipse.png')}
-        style={{ height: 60, width: 60, justifyContent: 'center' }}
-      >
-        <Image
-          style={{
-            width: 54,
-            height: 35,
-          }}
-          source={require('./assets/bicycle.png')}
-        />
-      </ImageBackground>
-    );
-  }
+  const { width, height } = Dimensions.get("window");
+
+  
+  const destination = {
+    latitude:43.766764, 
+
+    longitude: 11.251349,
+  };
+  
+  const GOOGLE_MAPS_APIKEY = 'AIzaSyArDHKxkI_wPzZB71m3HUjZgIuiZrGfg-k';
+  
+  
+ 
+
+
+  
+  const Aspect_Ratio = width / height;
+  const LATTUDE_DELTA = 0.2;
+  const LONGITUDE_DELTA = LATTUDE_DELTA * Aspect_Ratio;
+  const INITIAL_POSITION = {
+    latitude: 43.766764, 
+    longitude:11.251349,
+    latitudeDelta: LATTUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  };
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="auto" />
-      {userLocation && (
-        <MapView
-          style={styles.map}
-          region={{
-            latitude: userLocation.latitude,
-            longitude: userLocation.longitude,
-            latitudeDelta: 0.015,
-            longitudeDelta: 0.0121,
-          }}
+    <SafeAreaView style={styles.container}>
+      
+      <MapView
+        followUserLocation={true}
+        zoomEnabled={true}
+        pitchEnabled={true}
+        showsCompass={true}
+        showsBuildings={true}
+        showsTraffic={false}
+        showsIndoors={true}
+        customMapStyle={customMapStyle}
+        style={styles.map}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={INITIAL_POSITION}
+
+        showsUserLocation={true}
+        onUserLocationChange={(e) => {
+          console.log("onUserLocationChange", e.nativeEvent.coordinate);
+        }}
+      >
+        
+        {/* <Directi /> */}
+        
+        
+        
+        <Marker
+        
+        coordinate={pin}
+        title={"Pin"}
+        description='pin description'
+        on press={toggleCard}
         >
-          <Marker
-            draggable={true}
-            coordinate={userLocation}
-            onDragEnd={(e) => {
-              console.log('Marker dragged to:', e.nativeEvent.coordinate);
+
+        </Marker>
+        
+        <View style={styles.searchContainer}>
+          <GooglePlacesAutocomplete
+            styles={{ textInput: styles.input }}
+            placeholder={"Search"}
+            fetchDetails
+            onPress={(data, details = null) => {
+              onPlaceSelected(data, details);
             }}
-          >
-            <MyCustomMarkerView />
-          </Marker>
-          <MapViewDirections
-            origin={userLocation}
-            destination={{ latitude: 35.736034, longitude: 10.724127 }}
-            apikey={'YOUR_GOOGLE_MAPS_API_KEY'}
+            query={{
+              key: GOOGLE_MAPS_APIKEY,
+              language: 'en',
+            }}
           />
-        </MapView>
-      )}
-    </View>
-  );
-}
+        
+
+      
+      
+        </View>
+        <StatusBar style="auto" />
+        
+      </MapView>
+      
+        
+        {showCard && <Cardd />}
+    </SafeAreaView>
+  );}
+          
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   map: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
   },
+  searchContainer: {
+    position: 'absolute',
+    width: "90%",
+    opacity: 1,
+    top: Constants.statusBarHeight,
+    backgroundColor: "transparent",
+
+  },
+  input: {
+    borderColor: "#01F2CF",
+    borderWidth: 1,
+    backgroundColor: "transparent",
+    color: '#01F2CF'
+  }
+  
 });
